@@ -24,21 +24,16 @@ body {
 .game-card {
   background: #fdf6e3;
   color: #2a0000;
-
   max-width: 95vw;
   margin: 40px auto;
   padding: 20px;
-
   border-radius: 12px;
-
   box-shadow: 
     0 10px 30px rgba(0,0,0,0.6),
     inset 0 0 40px rgba(0,0,0,0.1);
-
   position: relative;
 }
 
-/* subtle paper texture lines */
 .game-card::before {
   content: "";
   position: absolute;
@@ -60,10 +55,8 @@ h1 { color: #ffccd5; }
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 3px;
-
   width: 90vw;
   max-width: 400px;
-
   margin: 20px auto;
   touch-action: none;
 }
@@ -80,12 +73,10 @@ h1 { color: #ffccd5; }
   background: #fffaf0;
   border: 1px solid #d6c5a3;
   color: #2a0000;
-
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: clamp(14px, 4vw, 20px);
   font-weight: bold;
 }
@@ -117,7 +108,6 @@ button {
   color: white;
 }
 
-/* NAME SCREEN */
 .start-screen {
   position: fixed;
   inset: 0;
@@ -126,7 +116,7 @@ button {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 9999
+  z-index: 9999;
 }
 
 input {
@@ -137,7 +127,6 @@ input {
   text-align: center;
 }
 
-/* SHARE */
 .overlay {
   position: fixed;
   inset: 0;
@@ -160,7 +149,6 @@ input {
 
 <body>
 
-<!-- NAME ENTRY -->
 <div class="start-screen" id="startScreen">
   <h2>Enter Your Name</h2>
   <input id="nameInput" placeholder="Your name...">
@@ -168,7 +156,6 @@ input {
 </div>
 
 <div class="game-card">
-
   <h1>🌹PLR Buried Words🌹</h1>
   <p id="playerName"></p>
 
@@ -176,7 +163,6 @@ input {
   <div id="wordList"></div>
   <div class="score" id="score">0 / 10 Found</div>
   <button id="shareBtn" style="display:none;">Share Results</button>
-
 </div>
 
 <div class="overlay" id="overlay">
@@ -201,78 +187,60 @@ function startGame(){
   document.getElementById("startScreen").style.display = "none";
 }
 
-// ✅ THIS MUST BE OUTSIDE THE FUNCTION
 document.getElementById("startBtn").addEventListener("click", startGame);
 
-// ===== WORDS =====
-const allWords = ["Olivia","hockey","singer","steel","riders","romance","Hayes","Milwaukee","comedy","riskitall"];
+// ===== FIXED 10 WORDS (NO SHUFFLE) =====
+const weeklyWords = [
+  "ellie drake","hockey","banter","romance","riders",
+  "milwaukee","Olivia","Hayes","singer","risk it all"
+];
 
 // ===== GRID =====
 const size=10;
 let grid=Array.from({length:size},()=>Array(size).fill(""));
-const dirs = [
-  [0, 1],   // right
-  [1, 0],   // down
-  [0, -1],  // left
-  [-1, 0]   // up
-];
+const dirs = [[0,1],[1,0],[0,-1],[-1,0]];
 
-function place(word){
-  word = word.toUpperCase();
-
-  let placed = false;
-
-  let attempts = 0;
-
-while(!placed && attempts < 500){
-  attempts++;
-    let dir = dirs[Math.floor(rand() * dirs.length)];
-    let row = Math.floor(rand() * size);
-    let col = Math.floor(rand() * size);
-
-    let fits = true;
-
-    for(let i = 0; i < word.length; i++){
-      let r = row + dir[0] * i;
-      let c = col + dir[1] * i;
-
-      if(
-        r < 0 || r >= size ||
-        c < 0 || c >= size ||
-        (grid[r][c] && grid[r][c] !== word[i])
-      ){
-        fits = false;
-        break;
-      }
-    }
-
-if(!placed){
-  console.warn("Failed to place word:", word);
-}
-
-    if(fits){
-      for(let i = 0; i < word.length; i++){
-        let r = row + dir[0] * i;
-        let c = col + dir[1] * i;
-        grid[r][c] = word[i];
-      }
-      placed = true;
-    }
-  }
-}
-
-let seed = getWeekNumber(new Date());
+let seed = Date.now();
 
 function rand(){
   seed = (seed*9301+49297)%233280;
   return seed/233280;
 }
 
-weeklyWords.forEach(w => place(w));
+function place(word){
+  word = word.toUpperCase();
+  let placed = false, attempts = 0;
+
+  while(!placed && attempts < 500){
+    attempts++;
+    let dir = dirs[Math.floor(rand()*dirs.length)];
+    let row = Math.floor(rand()*size);
+    let col = Math.floor(rand()*size);
+
+    let fits = true;
+
+    for(let i=0;i<word.length;i++){
+      let r=row+dir[0]*i, c=col+dir[1]*i;
+      if(r<0||r>=size||c<0||c>=size||(grid[r][c]&&grid[r][c]!==word[i])){
+        fits=false; break;
+      }
+    }
+
+    if(fits){
+      for(let i=0;i<word.length;i++){
+        let r=row+dir[0]*i, c=col+dir[1]*i;
+        grid[r][c]=word[i];
+      }
+      placed=true;
+    }
+  }
+}
+
+weeklyWords.forEach(w=>place(w));
 
 for(let r=0;r<size;r++){
   for(let c=0;c<size;c++){
-    if(!grid[r][c]) grid[r][c]=String.fromCharCode(65 + Math.floor(rand() * 26));
+    if(!grid[r][c]) grid[r][c]=String.fromCharCode(65+Math.floor(rand()*26));
   }
 }
 
@@ -288,77 +256,56 @@ grid.forEach(row=>{
 });
 
 const wordList = document.getElementById("wordList");
-
 weeklyWords.forEach(w=>{
-  let d = document.createElement("div");
-  d.textContent = w.toUpperCase();
-  d.className = "word";
+  let d=document.createElement("div");
+  d.textContent=w.toUpperCase();
+  d.className="word";
   wordList.appendChild(d);
 });
 
 // ===== GAME =====
-let selected = [];
-let selecting = false;
-let found = 0;
-
-let direction = null; // NEW
+let selected=[], selecting=false, found=0, direction=null;
 
 function getCell(x,y){return document.elementFromPoint(x,y);}
 
 function start(){
   if(!player) return;
-  selecting = true;
-  selected = [];
-  direction = null; // reset
+  selecting=true;
+  selected=[];
+  direction=null;
 }
 
 function move(e){
   if(!selecting) return;
+  let t=e.touches?e.touches[0]:e;
+  let cell=getCell(t.clientX,t.clientY);
+  if(!cell||!cell.classList.contains("cell")||selected.includes(cell)) return;
 
-  let t = e.touches ? e.touches[0] : e;
-  let cell = getCell(t.clientX, t.clientY);
-
-  if(!cell || !cell.classList.contains("cell") || selected.includes(cell)) return;
-
-  // FIRST LETTER
-  if(selected.length === 0){
+  if(selected.length===0){
     cell.classList.add("selected");
     selected.push(cell);
     return;
   }
 
-  // SECOND LETTER → lock direction
-  if(selected.length === 1){
-    const first = selected[0];
-    const dx = cell.offsetLeft - first.offsetLeft;
-    const dy = cell.offsetTop - first.offsetTop;
-
-    // determine direction
-    if(Math.abs(dx) > Math.abs(dy)){
-      direction = [0, dx > 0 ? 1 : -1]; // horizontal
-    } else {
-      direction = [dy > 0 ? 1 : -1, 0]; // vertical
-    }
-
+  if(selected.length===1){
+    const first=selected[0];
+    const dx=cell.offsetLeft-first.offsetLeft;
+    const dy=cell.offsetTop-first.offsetTop;
+    direction=Math.abs(dx)>Math.abs(dy)?[0,dx>0?1:-1]:[dy>0?1:-1,0];
     cell.classList.add("selected");
     selected.push(cell);
     return;
   }
 
-  // AFTER direction is set → enforce straight line
-  const last = selected[selected.length - 1];
+  const last=selected[selected.length-1];
+  const rowDiff=cell.offsetTop-last.offsetTop;
+  const colDiff=cell.offsetLeft-last.offsetLeft;
 
-  const rowDiff = cell.offsetTop - last.offsetTop;
-  const colDiff = cell.offsetLeft - last.offsetLeft;
-
-  let valid = false;
-
-  if(direction[0] === 0){
-    // horizontal
-    valid = rowDiff === 0 && Math.sign(colDiff) === direction[1];
+  let valid=false;
+  if(direction[0]===0){
+    valid=rowDiff===0&&Math.sign(colDiff)===direction[1];
   } else {
-    // vertical
-    valid = colDiff === 0 && Math.sign(rowDiff) === direction[0];
+    valid=colDiff===0&&Math.sign(rowDiff)===direction[0];
   }
 
   if(valid){
@@ -368,38 +315,33 @@ function move(e){
 }
 
 function end(){
-  selecting = false;
+  selecting=false;
 
-  let word = selected.map(c => c.textContent).join("");
-  let rev = word.split("").reverse().join("");
+  let word=selected.map(c=>c.textContent).join("");
+  let rev=word.split("").reverse().join("");
 
-  let match = weeklyWords.find(
-    w => w.toUpperCase() === word || w.toUpperCase() === rev
+  let match=weeklyWords.find(
+    w=>w.toUpperCase()===word||w.toUpperCase()===rev
   );
 
   if(match){
-    // highlight grid letters
-    selected.forEach(c => {
+    selected.forEach(c=>{
       c.classList.remove("selected");
       c.classList.add("found");
     });
 
-    // cross out word in list
-    document.querySelectorAll(".word").forEach(w => {
-      if(w.textContent.trim() === match.toUpperCase()){
-        if(!w.classList.contains("found")){
-          w.classList.add("found");
-          found++;
-        }
+    document.querySelectorAll(".word").forEach(w=>{
+      if(w.textContent.trim()===match.toUpperCase()&&!w.classList.contains("found")){
+        w.classList.add("found");
+        found++;
       }
     });
 
   } else {
-    // clear selection if wrong
-    selected.forEach(c => c.classList.remove("selected"));
+    selected.forEach(c=>c.classList.remove("selected"));
   }
 
-  selected = [];
+  selected=[];
   updateScore();
 }
 
@@ -413,7 +355,6 @@ gridDiv.addEventListener("mouseup",end);
 // ===== SCORE =====
 function updateScore(){
   document.getElementById("score").textContent = `${found} / 10 Found`;
-
   if(found===10){
     document.getElementById("shareBtn").style.display="inline-block";
   }
@@ -421,8 +362,7 @@ function updateScore(){
 
 // ===== SHARE =====
 document.getElementById("shareBtn").onclick=function(){
-  const today = new Date().toLocaleDateString();
-
+  const today=new Date().toLocaleDateString();
   document.getElementById("overlay").classList.add("active");
   document.getElementById("grid").classList.add("blurred");
 
