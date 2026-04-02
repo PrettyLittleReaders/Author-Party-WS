@@ -207,36 +207,6 @@ document.getElementById("startBtn").addEventListener("click", startGame);
 // ===== WORDS =====
 const allWords = ["Olivia","hockey","singer","steel","riders","romance","Hayes","Milwaukee","comedy","riskitall"];
 
-function getWeekNumber(d){
-  const date = new Date(d);
-
-  // get day (0 = Sunday, 2 = Tuesday)
-  const day = date.getDay();
-
-  // shift date BACK to most recent Tuesday
-  const diff = (day >= 2) ? day - 2 : day + 5;
-  date.setDate(date.getDate() - diff);
-
-  // start of year
-  const start = new Date(date.getFullYear(), 0, 1);
-
-  return Math.floor((date - start) / (7 * 24 * 60 * 60 * 1000));
-}
-
-function shuffle(arr,seed){
-  let a=[...arr],r=seed;
-  for(let i=a.length-1;i>0;i--){
-    r=(r*9301+49297)%233280;
-    let j=Math.floor((r/233280)*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-
-const weeklyWords = shuffle(allWords, getWeekNumber(new Date()))
-  .filter(w => w.length <= 10)
-  .slice(0, 10);
-
 // ===== GRID =====
 const size=10;
 let grid=Array.from({length:size},()=>Array(size).fill(""));
