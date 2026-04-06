@@ -208,7 +208,7 @@ function rand(){
 }
 
 function place(word){
-  word = word.toUpperCase();
+  word = word.replace(/\s+/g, "").toUpperCase(); // removes spaces
   let placed = false, attempts = 0;
 
   while(!placed && attempts < 500){
@@ -320,9 +320,10 @@ function end(){
   let word=selected.map(c=>c.textContent).join("");
   let rev=word.split("").reverse().join("");
 
-  let match=weeklyWords.find(
-    w=>w.toUpperCase()===word||w.toUpperCase()===rev
-  );
+  let match=weeklyWords.find(w=>{
+  const clean = w.replace(/\s+/g, "").toUpperCase();
+  return clean === word || clean === rev;
+});
 
   if(match){
     selected.forEach(c=>{
